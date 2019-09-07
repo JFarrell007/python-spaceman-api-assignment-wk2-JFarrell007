@@ -73,3 +73,25 @@ class GameApiViewTests( TestCase ):
     # HINT: remember the `setUp` fixture that is in this test class, 
     #   it constructs things that might be useful
 
+    def test_game_view_respond_with_404_when_id_for_game_not_found( self ):
+        with patch.object( Game.objects, 'get' ) as mock_get:
+            mock_get.side_effect = Game.DoesNotExist
+
+            response = game_view( self.mock_get_request, 25 )
+            self.assertEqual( response.status_code, 404 )
+
+
+    def test_game_view_respond_with_game_solution_when_id_for_game_is_found( self ):
+        with  patch.object ( Game.objects, 'get' ) as mock_get:
+            self.mock_game.word = 'batman'
+            mock_get.return_value = self.mock_game
+
+            response = game_solution( self.mock_get_request, 25 )
+
+            mock_get.assert_called_with( pk=25 )
+            self.assertEqual( response.status_code, 200 )
+
+            print( "Response Data... ", response.data )
+            self.mock_game.word = {'solution' : 'batman'}
+            self.assertDictEqual(response.data, self.mock_game.word)
+
